@@ -17,7 +17,7 @@ class Config:
 
     def save(self):
         with open(self.CONFIG_PATH, 'w') as file:
-            json.dump(self._data, fp=file)
+            json.dump(self._data, fp=file, indent=4)
 
     def _load_config(self):
         with open(self.CONFIG_PATH, 'r') as file:
