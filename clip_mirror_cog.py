@@ -27,8 +27,8 @@ class ClipMirrorCog(Cog, app_commands.Group, name="clips_channel"):
         self.ftp_server = ftplib.FTP()
 
     _PATTERNS = (
-        r".*((https://)?(clips.twitch.tv)/[\w-]+)",
-        r".*((https://)?(www.twitch.tv)/(\w+)/clip/[\w-]+)"
+        r"((https?://)?(clips\.twitch\.tv)/[\w-]+)",
+        r"((https?://)?((\w+\.)twitch\.tv)/(\w+/)?clip/[\w-]+)"
     )
 
     @app_commands.checks.has_permissions(manage_channels=True)
