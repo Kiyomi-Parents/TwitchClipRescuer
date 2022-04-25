@@ -1,0 +1,9 @@
+{
+    "DISCORD_TOKEN": "Discord bot token goes here",
+    "CLIPS_CHANNEL_IDS": [314159265358979323, 271828182845904523],
+    "FTP_HOST": "FTP server address goes here",
+    "FTP_PORT": 21,
+    "FTP_DIRECTORY": "",
+    "FTP_USERNAME": "FTP username goes here",
+    "FTP_PASSWORD": "FTP password goes here"
+}
