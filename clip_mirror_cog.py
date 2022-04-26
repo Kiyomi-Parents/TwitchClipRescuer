@@ -1,5 +1,3 @@
-import ftplib
-import re
 from pathlib import Path
 from typing import List
 
@@ -10,8 +8,10 @@ from discord.ext import commands
 from discord.ext.commands import Cog
 
 import downloader
+import ftp
 
 from main import DiscordBot
+from platforms import Platform, _get_platform
 
 
 async def setup(bot: DiscordBot):
@@ -24,12 +24,6 @@ class ClipMirrorCog(Cog, app_commands.Group, name="clips_channel"):
     def __init__(self, bot: DiscordBot):
         super().__init__()
         self.bot = bot
-        self.ftp_server = ftplib.FTP()
-
-    _PATTERNS = (
-        r"((https?://)?(clips\.twitch\.tv)/[\w-]+)",
-        r"((https?://)?((\w+\.)twitch\.tv)/(\w+/)?clip/[\w-]+)"
-    )
 
     @app_commands.checks.has_permissions(manage_channels=True)
     @app_commands.command(name="add")
@@ -82,20 +76,39 @@ class ClipMirrorCog(Cog, app_commands.Group, name="clips_channel"):
         if message.author == self.bot.user:
             return
 
-        target_directory = Path(f"{self.bot.config.get('FTP_DIRECTORY')}/{message.channel.name}")
+        try:
+            platform, url = _get_platform(message.content)
+        except TypeError:
+            return
 
-        for pattern in self._PATTERNS:
-            m = re.match(pattern, message.content)
-            if m:
-                self.ftp_server.connect(
-                    self.bot.config.get("FTP_HOST"),
-                    self.bot.config.get("FTP_PORT")
-                )
-                self.ftp_server.login(
-                    self.bot.config.get("FTP_USERNAME"),
-                    self.bot.config.get("FTP_PASSWORD")
-                )
-                downloader.download_clip(m.group(0), target_directory, self.ftp_server)
-                self.ftp_server.quit()
-                await message.add_reaction(PartialEmoji(name="✅"))
-                break
+        if platform == Platform.Unknown and not self.bot.config.get("ALLOW_UNKNOWN_SOURCES"):
+            return
+
+        kwargs = {}
+
+        if "FTP" in self.bot.config.get("ENABLED_MODES"):
+            ftp_settings = self.bot.config.get("FTP")
+            kwargs["ftp_server"] = ftp.FTP(
+                host=ftp_settings["HOST"],
+                port=ftp_settings["PORT"],
+                username=ftp_settings["USERNAME"],
+                password=ftp_settings["PASSWORD"],
+                sub_directory=Path(ftp_settings["SUBDIRECTORY"])
+            )
+
+        kwargs["delete_local"] = "LOCAL" not in self.bot.config.get("ENABLED_MODES")
+
+        target_directory = Path(self.bot.config.get("PATH"))
+        if self.bot.config.get("CREATE_DISCORD_CHANNEL_SUBDIRECTORY"):
+            target_directory /= Path(message.channel.name)
+        if self.bot.config.get("CREATE_PLATFORM_SUBDIRECTORY"):
+            target_directory /= Path(platform.name)
+        output_template = self.bot.config.get("OUTPUT_TEMPLATE")
+
+        try:
+            downloader.download_clip(url, output_template, target_directory, **kwargs)
+        except Exception as e:
+            await message.add_reaction("❌")
+            raise e
+
+        await message.add_reaction(PartialEmoji(name="✅"))

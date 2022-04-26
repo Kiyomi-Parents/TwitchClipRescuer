@@ -1,36 +1,32 @@
-import ftplib
 import os
 from pathlib import Path
 
 from yt_dlp import YoutubeDL
 
+import ftp
 
-def download_clip(url: str, target_directory: Path, ftp_server: ftplib.FTP):
+
+def download_clip(
+        url: str,
+        output_template: str,
+        target_directory: Path = "",
+        ftp_server: ftp.FTP = None,
+        delete_local: bool = False
+):
+    if not ftp_server and delete_local:
+        return
+
+    ydl_opts = {
+        'outtmpl': f'{target_directory}/{output_template}'
+    }
+
     def callback(path: str):
-        ensure_directory_exists(target_directory, ftp_server)
-        with open(path, "rb") as f:
-            pwd = ftp_server.pwd()
-            ftp_server.cwd(str(target_directory))
-            ftp_server.storbinary(f"STOR {Path(path).name}", f)
-            ftp_server.cwd(pwd)
-        os.remove(path)
+        if ftp_server is not None:
+            ftp_server.upload(path, target_directory)
 
-    with YoutubeDL() as ydl:
+        if delete_local:
+            os.remove(path)
+
+    with YoutubeDL(ydl_opts) as ydl:
         ydl.add_post_hook(callback)
         ydl.download([url])
-
-
-def ensure_directory_exists(path: Path, ftp_server: ftplib.FTP):
-    pwd = ftp_server.pwd()
-    try:
-        ftp_server.cwd(str(path))
-        ftp_server.cwd(pwd)
-    except ftplib.error_perm:
-        for i in range(len(path.parts) + 1):
-            current_path = "/".join(path.parts[:i])
-            try:
-                ftp_server.mkd(current_path)
-            except ftplib.error_perm:
-                continue
-
-    ftp_server.cwd(pwd)
