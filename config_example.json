@@ -5,15 +5,15 @@
     "ENABLED_MODES": [
         "FTP", "LOCAL"
     ],
-    "CREATE_PLATFORM_SUBDIRECTORY": true,
     "CREATE_DISCORD_CHANNEL_SUBDIRECTORY": false,
-    "OUTPUT_TEMPLATE": "%(title)s-%(id)s.%(ext)s",
+    "CREATE_PLATFORM_SUBDIRECTORY": true,
+    "OUTPUT_TEMPLATE": "%(creator)s/%(title)s-%(id)s.%(ext)s",
+    "PATH": "clips",
     "FTP": {
         "HOST": "FTP host goes here",
         "PORT": 21,
         "SUBDIRECTORY": "/ClipDownloader",
         "USERNAME": "FTP username goes here",
         "PASSWORD": "FTP password goes here"
-    },
-    "PATH": "clips"
+    }
 }
