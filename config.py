@@ -3,7 +3,7 @@ from typing import Dict
 
 
 class Config:
-    CONFIG_PATH = "config.json"
+    CONFIG_PATH = "config/config.json"
     _data: Dict
 
     def __init__(self):

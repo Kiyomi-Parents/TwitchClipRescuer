@@ -8,7 +8,7 @@ Discord bot that monitors specified text channels for posted Twitch clip links a
 	python3 -m pip install -r requirements.txt  
 
 ### Fill out config.json
-Create a file called config.json and fill it out with your configuration details.
+Create a file called config.json in a directory named config and fill it out with your configuration details.
 (You can use config_example.json to help you with this.)<br>
     
     "DISCORD_TOKEN" (string) - your Discord bot's token.
