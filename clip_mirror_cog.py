@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List
 
 import discord
-from discord import Message, PartialEmoji, app_commands, TextChannel
+from discord import Message, PartialEmoji, app_commands, TextChannel, Permissions
 from discord.app_commands import MissingPermissions
 from discord.ext import commands
 from discord.ext.commands import Cog
@@ -18,7 +18,7 @@ async def setup(bot: DiscordBot):
     await bot.add_cog(ClipMirrorCog(bot))
 
 
-class ClipMirrorCog(Cog, app_commands.Group, name="clips_channel"):
+class ClipMirrorCog(Cog):
     """Twitch clips channel commands"""
 
     def __init__(self, bot: DiscordBot):
@@ -31,8 +31,14 @@ class ClipMirrorCog(Cog, app_commands.Group, name="clips_channel"):
         r"((https?://)?((\w+\.)twitch\.tv)/(\w+/)?clip/[\w-]+)"
     )
 
-    @app_commands.checks.has_permissions(manage_channels=True)
-    @app_commands.command(name="add")
+    clip_channel = app_commands.Group(
+            name="clips_channel",
+            description="Twitch clips channel commands",
+            default_permissions=Permissions(manage_channels=True),
+            guild_only=True
+    )
+
+    @clip_channel.command(name="add")
     async def add_clips_channel(self, interaction: discord.Interaction, channel: TextChannel):
         """Add a channel where the bot will listen for twitch clip links"""
         channel_ids: List[int] = self.bot.config.get("CLIPS_CHANNEL_IDS")
@@ -48,8 +54,7 @@ class ClipMirrorCog(Cog, app_commands.Group, name="clips_channel"):
 
         await interaction.response.send_message("Channel has been added", ephemeral=True)
 
-    @app_commands.checks.has_permissions(manage_channels=True)
-    @app_commands.command(name="remove")
+    @clip_channel.command(name="remove")
     async def remove_clips_channel(self, interaction: discord.Interaction, channel: TextChannel):
         """Remove channel from the monitoring list"""
         channel_ids: List[int] = self.bot.config.get("CLIPS_CHANNEL_IDS")

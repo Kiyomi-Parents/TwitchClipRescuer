@@ -1,6 +1,7 @@
 import asyncio
 from typing import Any
 
+from discord import Permissions
 from discord.ext.commands import Bot
 import discord
 
@@ -16,13 +17,32 @@ class DiscordBot(Bot):
 
         self.config = config
 
+    @property
+    def invite_url(self) -> str:
+        return discord.utils.oauth_url(
+                self.user.id,
+                permissions=Permissions(
+                        add_reactions=True,
+                        read_messages=True
+                ),
+                scopes=('bot', 'applications.commands')
+        )
+
     async def on_ready(self):
         print('Logged on as', self.user)
 
         for guild in self.guilds:
+            # Remove commands from guild
             self.tree.clear_commands(guild=guild)
-            self.tree.copy_global_to(guild=guild)
             await self.tree.sync(guild=guild)
+
+            # Sync guild only commands
+            await self.tree.sync(guild=guild)
+
+        # Sync global commands
+        await self.tree.sync()
+
+        print(f"Invite: {self.invite_url}")
 
 
 async def startup():
