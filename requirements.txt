@@ -1,2 +1,2 @@
 yt_dlp==2022.4.8
-git+https://github.com/Rapptz/discord.py@a14b43f#egg=discord.py
+git+https://github.com/Rapptz/discord.py@b292951#egg=discord.py

@@ -30,22 +30,18 @@ class DiscordBot(Bot):
                 scopes=('bot', 'applications.commands')
         )
 
-    async def on_ready(self):
-        print('Logged on as', self.user)
+    async def setup_hook(self) -> None:
         print('Registering commands...')
 
         for guild in self.guilds:
-            # Remove commands from guild
-            self.tree.clear_commands(guild=guild)
-            await self.tree.sync(guild=guild)
-
             # Sync guild only commands
             await self.tree.sync(guild=guild)
 
-        # Sync global commands
+    async def on_ready(self):
+        # Sync global commands. Can't be done in setup_hook
         await self.tree.sync()
 
-        print('Startup finished!')
+        print('Logged on as', self.user)
         print(f"Invite: {self.invite_url}")
 
 
@@ -55,7 +51,7 @@ async def startup(loop: AbstractEventLoop):
     async with DiscordBot(command_prefix="!", config=config, loop=loop) as bot:
         await bot.load_extension("clip_mirror_cog")
 
-        await bot.start(config.get("DISCORD_TOKEN"))
+        await bot.start(token=config.get("DISCORD_TOKEN"))
 
 
 if __name__ == '__main__':
