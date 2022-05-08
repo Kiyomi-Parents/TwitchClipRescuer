@@ -38,6 +38,7 @@ class ClipMirrorCog(Cog):
     )
 
     @clip_channel.command(name="add")
+    @app_commands.describe(channel="Which text channel to monitor")
     async def add_clips_channel(self, interaction: discord.Interaction, channel: TextChannel):
         """Add a channel where the bot will listen for twitch clip links"""
         channel_ids: List[int] = self.bot.config.get("CLIPS_CHANNEL_IDS")
@@ -54,6 +55,7 @@ class ClipMirrorCog(Cog):
         await interaction.response.send_message("Channel has been added", ephemeral=True)
 
     @clip_channel.command(name="remove")
+    @app_commands.describe(channel="Which text channel to remove monitoring from")
     async def remove_clips_channel(self, interaction: discord.Interaction, channel: TextChannel):
         """Remove channel from the monitoring list"""
         channel_ids: List[int] = self.bot.config.get("CLIPS_CHANNEL_IDS")
