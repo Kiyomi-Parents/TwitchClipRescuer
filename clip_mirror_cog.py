@@ -3,8 +3,7 @@ import re
 from pathlib import Path
 from typing import List
 
-import discord
-from discord import Message, PartialEmoji, app_commands, TextChannel, Permissions
+from discord import Message, PartialEmoji, app_commands, TextChannel, Permissions, Interaction
 from discord.app_commands import MissingPermissions
 from discord.ext import commands
 from discord.ext.commands import Cog
@@ -20,15 +19,15 @@ async def setup(bot: DiscordBot):
 class ClipMirrorCog(Cog):
     """Twitch clips channel commands"""
 
-    def __init__(self, bot: DiscordBot):
-        super().__init__()
-        self.bot = bot
-        self.ftp_server = ftplib.FTP()
-
     _PATTERNS = (
         r"((https?://)?(clips\.twitch\.tv)/[\w-]+)",
         r"((https?://)?((\w+\.)twitch\.tv)/(\w+/)?clip/[\w-]+)"
     )
+
+    def __init__(self, bot: DiscordBot):
+        super().__init__()
+        self.bot = bot
+        self.ftp_server = ftplib.FTP()
 
     clip_channel = app_commands.Group(
             name="clips_channel",
@@ -39,7 +38,7 @@ class ClipMirrorCog(Cog):
 
     @clip_channel.command(name="add")
     @app_commands.describe(channel="Which text channel to monitor")
-    async def add_clips_channel(self, interaction: discord.Interaction, channel: TextChannel):
+    async def add_clips_channel(self, interaction: Interaction, channel: TextChannel):
         """Add a channel where the bot will listen for twitch clip links"""
         channel_ids: List[int] = self.bot.config.get("CLIPS_CHANNEL_IDS")
 
@@ -56,7 +55,7 @@ class ClipMirrorCog(Cog):
 
     @clip_channel.command(name="remove")
     @app_commands.describe(channel="Which text channel to remove monitoring from")
-    async def remove_clips_channel(self, interaction: discord.Interaction, channel: TextChannel):
+    async def remove_clips_channel(self, interaction: Interaction, channel: TextChannel):
         """Remove channel from the monitoring list"""
         channel_ids: List[int] = self.bot.config.get("CLIPS_CHANNEL_IDS")
 
@@ -73,7 +72,7 @@ class ClipMirrorCog(Cog):
 
     @remove_clips_channel.error
     @add_clips_channel.error
-    async def remove_clips_channel_error(self, interaction: discord.Interaction, error: Exception):
+    async def remove_clips_channel_error(self, interaction: Interaction, error: Exception):
         if isinstance(error, MissingPermissions):
             await interaction.response.send_message(
                 "You don't have the permissions to use this command!",
